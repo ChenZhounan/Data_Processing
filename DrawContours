@@ -1,0 +1,35 @@
+import io
+import shutil,os
+import glob
+import lmdb
+import json
+import cv2
+import random
+from PIL import Image
+import numpy as np
+
+imgBin = './final_competition/images'
+jsonBin = './separated'
+
+images = glob.glob(os.path.join(imgBin, '*.jpg'))#list of a lot of"dir/00.jpg"
+images.sort()
+nPic = len(images)
+images = iter(images)
+
+jsonFiles = glob.glob(os.path.join(jsonBin, '*.json'))
+jsonFiles.sort()
+jsonFiles = iter(jsonFiles)
+for i in range(1, nPic + 1):
+    save_file = './img_sep/' + str(i + 1) + '.jpg'
+    #first picture
+    image = cv2.imread(next(images), cv2.IMREAD_COLOR)
+    with open(next(jsonFiles), 'r') as fp:
+        fs = json.load(fp, encoding='utf8')
+        labels = fs['label']
+        nlabels = len(labels)
+        for a in range(nlabels):
+            ax,ay,bx,by,cx,cy,dx,dy= labels[a]['location']
+            Contour_i = np.array([[[int(ax), int(ay)], [int(bx), int(by)], [int(cx), int(cy)], [int(dx), int(dy)]]],np.int32)
+            cv2.drawContours(image, Contour_i, 0, (0, 0, 255), thickness=4, lineType=0, )
+    cv2.imwrite(save_file, image)
+    #print(i+a)#print the number of labels of every picture
